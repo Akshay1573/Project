@@ -6,17 +6,21 @@ cloudinary.config({
     api_secret: process.env.SECRET_KEY
 });
 
-const cloudinaryUploadImg = async (filePath, folder) => {
-    try {
-        const result = await cloudinary.uploader.upload(filePath, {
-            folder: folder,
-            resource_type: "auto"
+const cloudinaryUploadImg = async (fileToUploads) => {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload(fileToUploads, { resource_type: "auto" }, (error, result) => {
+            if (error) {
+                console.error("Cloudinary Upload Error:", error);
+                return reject(error);  // Properly reject the promise
+            }
+            resolve({
+                url: result.secure_url,
+                asset_id: result.asset_id,
+                public_id: result.public_id,
+            });
         });
-        return { url: result.secure_url };
-    } catch (error) {
-        console.error("Cloudinary Upload Error:", error);
-        throw new Error("Failed to upload image to Cloudinary");
-    }
+    });
 };
+
 
 module.exports = cloudinaryUploadImg;

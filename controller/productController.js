@@ -205,34 +205,29 @@ const rating = asyncHandler(async (req, res) => {
 });
 
 const uploadImages = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  validateMongodbId(id);
   try {
-    const uploader = (path) => cloudinaryUploadImg(path, "images");
+    const uploader = (path) => cloudinaryUploadImg(path);
     const urls = [];
     const files = req.files;
+
     for (const file of files) {
       const { path } = file;
-      const newpath = await uploader(path);
-      urls.push(newpath);
-    fs.unlinkSync(path)
-    }
-    const findproduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        images: urls.map((file) => {
-          return file;
-        }),
-      },
-      {
-        new: true,
+      try {
+        const newpath = await uploader(path);
+        urls.push(newpath);
+        fs.unlinkSync(path); // Delete the local file after uploading
+      } catch (uploadError) {
+        console.error("Cloudinary Upload Failed for file:", path, uploadError);
       }
-    );
-    res.json(findproduct);
+    }
+
+    res.json(urls);
   } catch (error) {
-    throw new Error(error);
+    console.error("Upload Images Error:", error);
+    res.status(500).json({ message: "Image upload failed" });
   }
 });
+
 
 
 

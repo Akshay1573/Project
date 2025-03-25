@@ -36,29 +36,47 @@ const uploadPhoto = multer({
 
 const productImgResize = async (req, res, next) => {
   if (!req.files) return next();
+  
   await Promise.all(
     req.files.map(async (file) => {
+      const outputPath = `public/images/products/${file.filename}`;
+      
       await sharp(file.path)
         .resize(300, 300)
         .toFormat("jpeg")
-        .toFile(`public/images/products/${file.filename}`);
-      fs.unlinkSync(`public/images/products/${file.filename}`)
+        .toFile(outputPath);
+
+      if (fs.existsSync(outputPath)) {
+        fs.unlinkSync(outputPath); // Only delete if the file exists
+      } else {
+        console.warn("File not found for deletion:", outputPath);
+      }
     })
   );
+  
   next();
 };
 
 const blogImgResize = async (req, res, next) => {
   if (!req.files) return next();
+  
   await Promise.all(
     req.files.map(async (file) => {
+      const outputPath = `public/images/blogs/${file.filename}`;
+      
       await sharp(file.path)
         .resize(300, 300)
         .toFormat("jpeg")
-        .toFile(`public/images/blogs/${file.filename}`);
-      fs.unlinkSync(`public/images/blogs/${file.filename}`)
+        .toFile(outputPath);
+
+      if (fs.existsSync(outputPath)) {
+        fs.unlinkSync(outputPath); // Only delete if the file exists
+      } else {
+        console.warn("File not found for deletion:", outputPath);
+      }
     })
   );
+  
   next();
 };
 
